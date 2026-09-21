@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matriz ABC × XYZ - Escaparate de Clasificación</title>
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #212529;
+      --border-color: #dee2e6;
+      --primary-color: #0d6efd;
+      --alert-bg: #fff3cd;
+      --alert-border: #ffecb5;
+      --alert-text: #664d03;
+      --selected-bg: #e7f1ff;
+      --selected-border: #0d6efd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.5;
+      padding: 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: #6c757d;
+      font-size: 0.95rem;
+    }
+
+    .alert-card {
+      background-color: var(--alert-bg);
+      border: 1px solid var(--alert-border);
+      color: var(--alert-text);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+
+    .alert-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .alert-section {
+      margin-top: 0.5rem;
+    }
+
+    .alert-section strong {
+      display: inline-block;
+      min-width: 45px;
+    }
+
+    .matrix-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+
+    .matrix-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    table.matrix-table th, table.matrix-table td {
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 0.5rem;
+    }
+
+    table.matrix-table th {
+      background-color: #e9ecef;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .matrix-cell {
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .matrix-cell:hover {
+      background-color: #f1f3f5;
+    }
+
+    .matrix-cell.selected {
+      background-color: var(--selected-bg);
+      border: 2px solid var(--selected-border) !important;
+      font-weight: bold;
+    }
+
+    .cell-code {
+      font-size: 0.8rem;
+      color: #6c757d;
+      display: block;
+    }
+
+    .cell-count {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .details-container {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .details-header {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+
+    }
+
+    .sku-list {
+      list-style: none;
+    }
+
+    .sku-item {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sku-item:last-child {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25em 0.6em;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 0.25rem;
+      background-color: #e9ecef;
+      color: #495057;
+    }
+
+    .badge-az, .badge-ay {
+      background-color: #ffc107;
+      color: #000;
+    }
+
+    .error-msg {
+      color: #dc3545;
+      padding: 1rem;
+      background: #f8d7da;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 576px) {
+      body {
+        padding: 0.5rem;
+      }
+      h1 {
+        font-size: 1.35rem;
+      }
+      .cell-count {
+        font-size: 1rem;
+      }
+      table.matrix-table th, table.matrix-table td {
+        padding: 0.5rem 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Escaparate de Clasificación ABC × XYZ</h1>
+    <div class="subtitle">Análisis de inventario y matriz de variabilidad</div>
+  </header>
+
+  <main>
+    <div id="alert-banner" class="alert-card">
+      <div class="alert-title">⚠️ Aviso Destacado: Referencias Críticas (AZ / AY)</div>
+      <div id="alert-content">Cargando datos...</div>
+    </div>
+
+    <section class="matrix-container">
+      <div class="matrix-title">Matriz ABC × XYZ (Recuento)</div>
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>ABC \ XYZ</th>
+            <th>X (CV ≤ 0.25)</th>
+            <th>Y (0.25 &lt; CV ≤ 0.50)</th>
+            <th>Z (CV &gt; 0.50)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Clase A</th>
+            <td class="matrix-cell" data-cell="AX" id="cell-AX">-</td>
+            <td class="matrix-cell" data-cell="AY" id="cell-AY">-</td>
+            <td class="matrix-cell" data-cell="AZ" id="cell-AZ">-</td>
+          </tr>
+          <tr>
+            <th>Clase B</th>
+            <td class="matrix-cell" data-cell="BX" id="cell-BX">-</td>
+            <td class="matrix-cell" data-cell="BY" id="cell-BY">-</td>
+            <td class="matrix-cell" data-cell="BZ" id="cell-BZ">-</td>
+          </tr>
+          <tr>
+            <th>Clase C</th>
+            <td class="matrix-cell" data-cell="CX" id="cell-CX">-</td>
+            <td class="matrix-cell" data-cell="CY" id="cell-CY">-</td>
+            <td class="matrix-cell" data-cell="CZ" id="cell-CZ">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="details-container">
+      <div class="details-header" id="details-title">Selecciona una celda de la matriz</div>
+      <div id="details-content">
+        <p style="color: #6c757d;">Haz clic en cualquier celda de la tabla para ver las referencias correspondientes.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/).filter(line => line.trim() !== '');
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(',').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const row = {};
+        headers.forEach((h, i) => {
+          row[h] = values[i] !== undefined ? values[i] : '';
+        });
+        return row;
+      });
+    }
+
+    let clasificacionData = [];
+
+    async function loadData() {
+      try {
+        const response = await fetch('resultados/clasificacion.csv');
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+        }
+        const text = await response.text();
+        clasificacionData = parseCSV(text);
+        renderDashboard(clasificacionData);
+      } catch (err) {
+        console.error('Error al cargar clasificacion.csv:', err);
+        document.getElementById('alert-content').innerHTML = `
+          <div class="error-msg">
+            No se pudieron cargar los datos de <code>resultados/clasificacion.csv</code>. (${err.message})
+          </div>
+        `;
+      }
+    }
+
+    function renderDashboard(data) {
+      // 1. Group data by cell code
+      const cellCounts = {
+        AX: [], AY: [], AZ: [],
+        BX: [], BY: [], BZ: [],
+        CX: [], CY: [], CZ: []
+      };
+
+      data.forEach(item => {
+        const cell = item.celda || (item.clase_abc + item.clase_xyz);
+        if (cellCounts[cell]) {
+          cellCounts[cell].push(item);
+        }
+      });
+
+      // 2. Render counts in matrix table
+      Object.keys(cellCounts).forEach(cellKey => {
+        const cellTd = document.getElementById(`cell-${cellKey}`);
+        if (cellTd) {
+          const count = cellCounts[cellKey].length;
+          cellTd.innerHTML = `
+            <span class="cell-code">${cellKey}</span>
+            <span class="cell-count">${count}</span>
+          `;
+          cellTd.addEventListener('click', () => selectCell(cellKey, cellCounts[cellKey]));
+        }
+      });
+
+      // 3. Render AZ & AY Alert Banner
+      const azItems = cellCounts.AZ || [];
+      const ayItems = cellCounts.AY || [];
+
+      let alertHtml = '';
+      if (azItems.length === 0 && ayItems.length === 0) {
+        alertHtml = '<p>No hay referencias registradas en las celdas críticas AZ ni AY.</p>';
+      } else {
+        alertHtml += '<div class="alert-section">';
+        alertHtml += `<div><strong>AZ (${azItems.length}):</strong> ${azItems.length > 0 ? azItems.map(i => `<code>${i.sku}</code>`).join(', ') : '<em>Ninguna</em>'}</div>`;
+        alertHtml += `<div><strong>AY (${ayItems.length}):</strong> ${ayItems.length > 0 ? ayItems.map(i => `<code>${i.sku}</code>`).join(', ') : '<em>Ninguna</em>'}</div>`;
+        alertHtml += '</div>';
+      }
+      document.getElementById('alert-content').innerHTML = alertHtml;
+    }
+
+    function selectCell(cellKey, items) {
+      // Clear previous selection highlight
+      document.querySelectorAll('.matrix-cell').forEach(td => td.classList.remove('selected'));
+      const selectedTd = document.getElementById(`cell-${cellKey}`);
+      if (selectedTd) selectedTd.classList.add('selected');
+
+      // Render details
+      const titleEl = document.getElementById('details-title');
+      const contentEl = document.getElementById('details-content');
+
+      titleEl.textContent = `Referencias en Celda ${cellKey} (${items.length})`;
+
+      if (items.length === 0) {
+        contentEl.innerHTML = '<p style="color: #6c757d;">No hay referencias en esta celda.</p>';
+        return;
+      }
+
+      let html = '<ul class="sku-list">';
+      items.forEach(item => {
+        const badgeClass = (cellKey === 'AZ' || cellKey === 'AY') ? 'badge badge-az' : 'badge';
+        const extraInfo = [];
+        if (item.margen_anual) extraInfo.push(`Margen: ${Number(item.margen_anual).toLocaleString('es-ES')}`);
+        if (item.cv) extraInfo.push(`CV: ${Number(item.cv).toFixed(3)}`);
+
+        const extraText = extraInfo.length > 0 ? `<span style="font-size: 0.85rem; color: #6c757d; margin-right: 0.5rem;">${extraInfo.join(' | ')}</span>` : '';
+
+        html += `
+          <li class="sku-item">
+            <span><strong>${item.sku}</strong></span>
+            <div>
+              ${extraText}
+              <span class="${badgeClass}">${item.celda || cellKey}</span>
+            </div>
+          </li>
+        `;
+      });
+      html += '</ul>';
+      contentEl.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
